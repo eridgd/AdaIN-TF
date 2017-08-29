@@ -9,7 +9,11 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 # TODO:
 
 * Docs
+
 * CORAL for preserving colors
+
 * Style interpolation
+
 * Video processing
+
 * Model freezing
