@@ -14,6 +14,6 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 
 * Style interpolation
 
-* Video processing
+* Video processing
 
 * Model freezing
