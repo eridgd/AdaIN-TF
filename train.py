@@ -32,9 +32,6 @@ parser.add_argument('--tv-weight', type=float,
                     default=0)
 
 ### Model opts
-parser.add_argument('--small', action='store_true', 
-                    help='Use small model with half the params',
-                    default=False)
 parser.add_argument('--gram', action='store_true', 
                     help='Use gram matrices for style loss instead of mean/std',
                     default=False)
@@ -117,7 +114,6 @@ def train():
 
         ### Build the model graph and train/summary ops
         model = AdaINModel(mode='train',
-                           small_model=args.small,
                            batch_size=args.batch_size,
                            content_weight=args.content_weight, 
                            style_weight=args.style_weight,

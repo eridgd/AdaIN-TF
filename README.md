@@ -1,6 +1,6 @@
 # AdaIN-TF
 
-This is a TensorFlow/Keras implementation of [Arbitrary Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization](https://arxiv.org/abs/1703.06868).
+This is a TensorFlow/Keras implementation of [Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization](https://arxiv.org/abs/1703.06868).
 
 # Acknowledgments
 

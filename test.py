@@ -5,8 +5,8 @@ import tensorflow as tf
 
 
 class AdaINTest(object):
-    def __init__(self, checkpoint_dir, device_t='/gpu:0', small_model=False):        
-        model = AdaINModel(small_model=small_model, mode='test')
+    def __init__(self, checkpoint_dir, device_t='/gpu:0'):        
+        model = AdaINModel(mode='test')
 
         self.stylized = model.decoded
         self.content_imgs = model.content_imgs

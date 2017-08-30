@@ -10,7 +10,7 @@ def pad_reflect(x, padding=1):
       mode='REFLECT')
 
 def Conv2DReflect(*args, **kwargs):
-	return Lambda(lambda x: Conv2D(*args, **kwargs)(pad_reflect(x)))
+    return Lambda(lambda x: Conv2D(*args, **kwargs)(pad_reflect(x)))
 
 def adain(content_features, style_features, alpha, epsilon=1e-5):
     '''
@@ -55,7 +55,7 @@ def torch_decay(learning_rate, global_step, decay_rate, name=None):
 
 def gram_matrix(feature_maps):
     """Computes the Gram matrix for a set of feature maps.
-    Borrowed from https://github.com/tensorflow/magenta/blob/9eb2e71074c09f55dba10cc493d26aef3168cdcb/magenta/models/image_stylization/learning.py
+       Borrowed from https://github.com/tensorflow/magenta/blob/9eb2e71074c09f55dba10cc493d26aef3168cdcb/magenta/models/image_stylization/learning.py
     """
     batch_size, height, width, channels = tf.unstack(tf.shape(feature_maps))
     denominator = tf.to_float(height * width)

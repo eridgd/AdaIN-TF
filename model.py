@@ -11,14 +11,14 @@ import functools
 class AdaINModel(object):
     '''Adaptive Instance Normalization model from https://arxiv.org/abs/1703.06868
     '''
-    def __init__(self, mode='train', small_model=False, *args, **kwargs):
-        self.build_model(small_model=small_model)
+    def __init__(self, mode='train', *args, **kwargs):
+        self.build_model()
 
         if mode == 'train':
             self.build_train(**kwargs)
             self.build_summary()
 
-    def build_model(self, small_model=False):
+    def build_model(self):
         self.content_imgs = tf.placeholder(shape=(None, None, None, 3), name='content_imgs', dtype=tf.float32)
         self.style_imgs = tf.placeholder(shape=(None, None, None, 3), name='style_imgs', dtype=tf.float32)
         
@@ -45,7 +45,7 @@ class AdaINModel(object):
         ### Build decoder
         with tf.name_scope('decoder'):
             n_channels = self.adain_encoded.get_shape()[-1].value
-            self.decoder_model = self.build_decoder(input_shape=(None, None, n_channels), small_model=small_model)
+            self.decoder_model = self.build_decoder(input_shape=(None, None, n_channels))
             
             # Stylized/decoded output from AdaIN transformed encoding
             self.decoded = self.decoder_model(Lambda(lambda x: x)(self.adain_encoded)) # Lambda converts TF tensor to Keras
@@ -54,33 +54,22 @@ class AdaINModel(object):
         # Content layer encoding for stylized out
         self.decoded_encoded = self.content_encoder_model(self.decoded)
 
-    def build_decoder(self, input_shape, small_model=False):
-        if small_model:
-            arch = [                                                            #  HxW  / InC->OutC
-                    Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
-                    UpSampling2D(),                                             # 32x32 -> 64x64
-                    Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 64x64 / 256->128
-                    UpSampling2D(),                                             # 64x64 -> 128x128
-                    Conv2DReflect(32, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
-                    UpSampling2D(),                                             # 128x128 -> 256x256
-                    Conv2DReflect(32, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
-                    Conv2DReflect(3, 3, padding='valid', activation=None)] # 256x256 / 64->3
-                    # Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
-        else:
-            arch = [                                                            
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
-                    UpSampling2D(),                                             # 32x32 -> 64x64
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
-                    Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 64x64 / 256->128
-                    UpSampling2D(),                                             # 64x64 -> 128x128
-                    Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 128x128 / 128->128
-                    Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
-                    UpSampling2D(),                                             # 128x128 -> 256x256
-                    Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
-                    Conv2DReflect(3, 3, padding='valid', activation=None)] # 256x256 / 64->3
-                    # Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
+
+    def build_decoder(self, input_shape):
+                                                                            #  HxW  / InC->OutC
+        arch = [                                                            
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
+                UpSampling2D(),                                             # 32x32 -> 64x64
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
+                Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 64x64 / 256->128
+                UpSampling2D(),                                             # 64x64 -> 128x128
+                Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 128x128 / 128->128
+                Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
+                UpSampling2D(),                                             # 128x128 -> 256x256
+                Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
+                Conv2DReflect(3, 3, padding='valid', activation=None)] # 256x256 / 64->3
         
         code = Input(shape=input_shape, name='decoder_input')
         x = code
@@ -101,22 +90,14 @@ class AdaINModel(object):
                     learning_rate=1e-4, 
                     lr_decay=5e-5, 
                     use_gram=False):
-        ### Extract style layer feature maps
+        ### Extract style layer feature maps for input style & decoded stylized output
         with tf.name_scope('style_layers'):
             # Build style model for blockX_conv1 tensors for X:[1,2,3,4]
             relu_layers = [ 'relu1_1',
                             'relu2_1',
                             'relu3_1',
                             'relu4_1' ]
-            # relu_layers = [ 'relu1_1',
-            #                 'relu1_2',
-            #                 'relu2_1',
-            #                 'relu2_2',
-            #                 'relu3_1',
-            #                 'relu3_2',
-            #                 'relu3_3',
-            #                 'relu3_4',
-            #                 'relu4_1' ]
+
             style_layers = [self.vgg_model.get_layer(l).output for l in relu_layers]
             self.style_layer_model = Model(inputs=self.vgg_model.input, outputs=style_layers)
 
@@ -128,6 +109,7 @@ class AdaINModel(object):
             # Content loss between stylized encoding and AdaIN encoding
             self.content_loss = content_weight * mse(self.decoded_encoded, self.adain_encoded)
 
+            # Style losses
             if not use_gram:    # Collect style losses for means/stds
                 mean_std_losses = []
                 for s_map, d_map in zip(self.style_fmaps, self.decoded_fmaps):
@@ -151,13 +133,13 @@ class AdaINModel(object):
                     gram_losses.append(gram_loss)
                 self.style_loss = tf.reduce_sum(gram_losses) / batch_size
 
+            # Total Variation loss
             if tv_weight > 0:
                 self.tv_loss = tv_weight * tf.reduce_mean(tf.image.total_variation(self.decoded))
             else:
                 self.tv_loss = tf.constant(0.)
 
-            # Weight & combine content/style losses
-            # self.total_loss = content_weight*self.content_loss + style_weight*self.style_loss + tv_weight*self.tv_loss
+            # Add it all together
             self.total_loss = self.content_loss + self.style_loss + self.tv_loss
 
         ### Training ops
@@ -168,8 +150,7 @@ class AdaINModel(object):
             d_optimizer = tf.train.AdamOptimizer(self.learning_rate, beta1=0.9, beta2=0.9)
 
             t_vars = tf.trainable_variables()
-            # Only train decoder vars, encoder is frozen
-            self.d_vars = [var for var in t_vars if 'decoder' in var.name]
+            self.d_vars = [var for var in t_vars if 'decoder' in var.name]  # Only train decoder vars, encoder is frozen
 
             self.train_op = d_optimizer.minimize(self.total_loss, var_list=self.d_vars, global_step=self.global_step)
 
