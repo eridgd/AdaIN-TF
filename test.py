@@ -36,7 +36,7 @@ class AdaINTest(object):
 
     @staticmethod
     def postprocess(image):
-        return (image * 255.).astype(np.uint8)
+        return np.uint8(np.clip(image, 0, 1) * 255)
 
     def predict(self, content, style, alpha=1):
         content = self.preprocess(content)

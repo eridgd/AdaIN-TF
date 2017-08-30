@@ -10,6 +10,8 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 
 * Docs
 
+* Pre-trained model
+
 * CORAL for preserving colors
 
 * Style interpolation

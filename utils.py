@@ -55,7 +55,7 @@ def get_img_crop(src, resize=512, crop=256):
 def get_img_random_crop(src, resize=512, crop=256):
     '''Get & resize image and random crop'''
     img = get_img(src)
-    img = resize_to(img, size=resize)
+    img = resize_to(img, resize=resize)
     
     offset_h = random.randint(0, (img.shape[0]-crop))
     offset_w = random.randint(0, (img.shape[1]-crop))

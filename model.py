@@ -49,6 +49,7 @@ class AdaINModel(object):
             
             # Stylized/decoded output from AdaIN transformed encoding
             self.decoded = self.decoder_model(Lambda(lambda x: x)(self.adain_encoded)) # Lambda converts TF tensor to Keras
+            self.decoded = tf.Print(self.decoded, [tf.reduce_min(self.decoded), tf.reduce_max(self.decoded)])
 
         # Content layer encoding for stylized out
         self.decoded_encoded = self.content_encoder_model(self.decoded)
@@ -63,7 +64,8 @@ class AdaINModel(object):
                     Conv2DReflect(32, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
                     UpSampling2D(),                                             # 128x128 -> 256x256
                     Conv2DReflect(32, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
-                    Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
+                    Conv2DReflect(3, 3, padding='valid', activation=None)] # 256x256 / 64->3
+                    # Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
         else:
             arch = [                                                            
                     Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
@@ -77,7 +79,8 @@ class AdaINModel(object):
                     Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
                     UpSampling2D(),                                             # 128x128 -> 256x256
                     Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
-                    Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
+                    Conv2DReflect(3, 3, padding='valid', activation=None)] # 256x256 / 64->3
+                    # Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
         
         code = Input(shape=input_shape, name='decoder_input')
         x = code
@@ -178,9 +181,10 @@ class AdaINModel(object):
             tv_loss_summary = tf.summary.scalar('tv_loss', self.tv_loss)
             total_loss_summary = tf.summary.scalar('total_loss', self.total_loss)
 
-            content_imgs_summary = tf.summary.image('content_imgs', self.content_imgs)
-            style_imgs_summary = tf.summary.image('style_imgs', self.style_imgs)
-            decoded_images_summary = tf.summary.image('decoded_images', self.decoded)
+            clip = lambda x: tf.clip_by_value(x, 0, 1)
+            content_imgs_summary = tf.summary.image('content_imgs', clip(self.content_imgs))
+            style_imgs_summary = tf.summary.image('style_imgs', clip(self.style_imgs))
+            decoded_images_summary = tf.summary.image('decoded_images', clip(self.decoded))
             
             # # Visualize first three filters of encoding layers
             # sliced = lambda x: tf.slice(x, [0,0,0,0], [-1,-1,-1,3])

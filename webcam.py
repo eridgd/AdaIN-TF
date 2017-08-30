@@ -10,7 +10,7 @@ from threading import Thread
 import os
 from utils import get_files, get_img, get_img_crop
 from scipy.ndimage.filters import gaussian_filter
-from coral import coral
+# from coral import coral
 from test import AdaINTest
 
 
