@@ -11,14 +11,14 @@ import functools
 class AdaINModel(object):
     '''Adaptive Instance Normalization model from https://arxiv.org/abs/1703.06868
     '''
-    def __init__(self, mode='train', small_model=False, *args, **kwargs):
-        self.build_model(small_model=small_model)
+    def __init__(self, mode='train', *args, **kwargs):
+        self.build_model()
 
         if mode == 'train':
             self.build_train(**kwargs)
             self.build_summary()
 
-    def build_model(self, small_model=False):
+    def build_model(self):
         self.content_imgs = tf.placeholder(shape=(None, None, None, 3), name='content_imgs', dtype=tf.float32)
         self.style_imgs = tf.placeholder(shape=(None, None, None, 3), name='style_imgs', dtype=tf.float32)
         
@@ -45,7 +45,7 @@ class AdaINModel(object):
         ### Build decoder
         with tf.name_scope('decoder'):
             n_channels = self.adain_encoded.get_shape()[-1].value
-            self.decoder_model = self.build_decoder(input_shape=(None, None, n_channels), small_model=small_model)
+            self.decoder_model = self.build_decoder(input_shape=(None, None, n_channels))
             
             # Stylized/decoded output from AdaIN transformed encoding
             self.decoded = self.decoder_model(Lambda(lambda x: x)(self.adain_encoded)) # Lambda converts TF tensor to Keras
@@ -53,31 +53,21 @@ class AdaINModel(object):
         # Content layer encoding for stylized out
         self.decoded_encoded = self.content_encoder_model(self.decoded)
 
-    def build_decoder(self, input_shape, small_model=False):
-        if small_model:
-            arch = [                                                            #  HxW  / InC->OutC
-                    Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
-                    UpSampling2D(),                                             # 32x32 -> 64x64
-                    Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 64x64 / 256->128
-                    UpSampling2D(),                                             # 64x64 -> 128x128
-                    Conv2DReflect(32, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
-                    UpSampling2D(),                                             # 128x128 -> 256x256
-                    Conv2DReflect(32, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
-                    Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
-        else:
-            arch = [                                                            
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
-                    UpSampling2D(),                                             # 32x32 -> 64x64
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
-                    Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
-                    Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 64x64 / 256->128
-                    UpSampling2D(),                                             # 64x64 -> 128x128
-                    Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 128x128 / 128->128
-                    Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
-                    UpSampling2D(),                                             # 128x128 -> 256x256
-                    Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
-                    Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
+    def build_decoder(self, input_shape):
+                                                                            #  HxW  / InC->OutC
+        arch = [                                                            
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
+                UpSampling2D(),                                             # 32x32 -> 64x64
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
+                Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
+                Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 64x64 / 256->128
+                UpSampling2D(),                                             # 64x64 -> 128x128
+                Conv2DReflect(128, 3, padding='valid', activation='relu'),  # 128x128 / 128->128
+                Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
+                UpSampling2D(),                                             # 128x128 -> 256x256
+                Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
+                Conv2DReflect(3, 3, padding='valid', activation='sigmoid')] # 256x256 / 64->3
         
         code = Input(shape=input_shape, name='decoder_input')
         x = code

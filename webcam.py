@@ -31,7 +31,6 @@ parser.add_argument('--device', type=str,
                         default='/gpu:0')
 parser.add_argument('--style-size', type=int, help="Resize style image to this size before cropping 256x256", default=512)
 parser.add_argument('--alpha', type=float, help="Alpha blend value", default=1)
-parser.add_argument('--small', action='store_true', help="Use small model architecture", default=False)
 parser.add_argument('--concat', action='store_true', help="Concatenate style image and stylized output", default=False)
 parser.add_argument('--noise', action='store_true', help="Synthesize textures from noise images", default=False)
 parser.add_argument('-r', '--random', type=int, help='Load a random img after iterations', default=0)
@@ -141,7 +140,7 @@ def main():
     frame_resize = cv2.resize(frame, None, fx=args.scale, fy=args.scale)
     img_shape = frame_resize.shape
     
-    ada_in = AdaINTest(args.checkpoint, args.device, args.small)
+    ada_in = AdaINTest(args.checkpoint, args.device)
     
     style_window = StyleWindow(args.style_path, args.style_size, args.scale, args.alpha)
 
