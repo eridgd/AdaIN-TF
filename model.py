@@ -49,7 +49,6 @@ class AdaINModel(object):
             
             # Stylized/decoded output from AdaIN transformed encoding
             self.decoded = self.decoder_model(Lambda(lambda x: x)(self.adain_encoded)) # Lambda converts TF tensor to Keras
-            self.decoded = tf.Print(self.decoded, [tf.reduce_min(self.decoded), tf.reduce_max(self.decoded)])
 
         # Content layer encoding for stylized out
         self.decoded_encoded = self.content_encoder_model(self.decoded)
