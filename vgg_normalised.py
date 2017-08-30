@@ -16,6 +16,7 @@ import torchfile
 def vgg_from_t7(t7_file, target_layer=None):
     '''Extract VGG layers from a Torch .t7 model into a Keras model
        e.g. vgg = vgg_from_t7('vgg_normalised.t7', target_layer='relu4_1')
+       Adapted from https://github.com/jonrei/tf-AdaIN/blob/master/AdaIN.py
     '''
     t7 = torchfile.load(t7_file, force_8bytes_long=True)
     
@@ -25,8 +26,9 @@ def vgg_from_t7(t7_file, target_layer=None):
     
     for idx,module in enumerate(t7.modules):
         name = module.name.decode() if module.name is not None else None
+        
         if idx == 0:
-            name = 'preprocess'
+            name = 'preprocess'  # VGG 1st layer preprocesses with a 1x1 conv to multiply by 255 and subtract BGR mean as bias
 
         if module._typename == b'nn.SpatialReflectionPadding':
             x = Lambda(pad_reflect)(x)            

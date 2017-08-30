@@ -21,7 +21,6 @@ class AdaINModel(object):
     def build_model(self):
         self.content_imgs = tf.placeholder(shape=(None, None, None, 3), name='content_imgs', dtype=tf.float32)
         self.style_imgs = tf.placeholder(shape=(None, None, None, 3), name='style_imgs', dtype=tf.float32)
-        
         self.alpha = tf.placeholder_with_default(1., shape=[], name='alpha')
 
         ### Load shared VGG model up to relu4_1
@@ -55,8 +54,7 @@ class AdaINModel(object):
 
 
     def build_decoder(self, input_shape):
-                                                                            #  HxW  / InC->OutC
-        arch = [                                                            
+        arch = [                                                            #  HxW  / InC->OutC
                 Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
                 UpSampling2D(),                                             # 32x32 -> 64x64
                 Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 64x64 / 256->256
@@ -68,7 +66,7 @@ class AdaINModel(object):
                 Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 128x128 / 128->64
                 UpSampling2D(),                                             # 128x128 -> 256x256
                 Conv2DReflect(64, 3, padding='valid', activation='relu'),   # 256x256 / 64->64
-                Conv2DReflect(3, 3, padding='valid', activation=None)] # 256x256 / 64->3
+                Conv2DReflect(3, 3, padding='valid', activation=None)]      # 256x256 / 64->3
         
         code = Input(shape=input_shape, name='decoder_input')
         x = code
