@@ -46,13 +46,11 @@ class AdaINModel(object):
             n_channels = self.adain_encoded.get_shape()[-1].value
             self.decoder_model = self.build_decoder(input_shape=(None, None, n_channels))
 
+            # Setup a placeholder that defaults to the adain tensor but can be substituted with a feed_dict. Needed for interpolation.
             self.adain_encoded_pl = tf.placeholder_with_default(self.adain_encoded, shape=self.adain_encoded.get_shape())
             
             # Stylized/decoded output from AdaIN transformed encoding
             self.decoded = self.decoder_model(Lambda(lambda x: x)(self.adain_encoded_pl)) # Lambda converts TF tensor to Keras
-
-            # self.adain_encoded_pl = K.placeholder(shape=(None, None, None, n_channels))
-            # self.decoded_from_pl = self.decoder_model(self.adain_encoded_pl)
 
         # Content layer encoding for stylized out
         self.decoded_encoded = self.content_encoder_model(self.decoded)

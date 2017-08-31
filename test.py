@@ -54,19 +54,19 @@ class AdaINTest(object):
 
     def predict_interpolate(self, content, styles, style_weights, alpha=1):
         content_stacked = np.stack([content]*len(styles))
-        content_stacked = self.preprocess(content_stacked)
-
         style_stacked = np.stack(styles)
+        content_stacked = self.preprocess(content_stacked)
         style_stacked = self.preprocess(style_stacked)
 
         encoded = self.sess.run(self.model.adain_encoded, feed_dict={self.content_imgs: content_stacked,
                                                                      self.style_imgs:   style_stacked,
                                                                      self.alpha_tensor: alpha})
+        
         style_weights = np.array(style_weights).reshape((-1, 1, 1, 1))
         encoded_weighted = encoded * style_weights
-        encoded_summed = np.sum(encoded_weighted, axis=0, keepdims=True)
+        encoded_interpolated = np.sum(encoded_weighted, axis=0, keepdims=True)
 
-        stylized = self.sess.run(self.stylized, feed_dict={self.model.adain_encoded_pl: encoded_summed})
+        stylized = self.sess.run(self.stylized, feed_dict={self.model.adain_encoded_pl: encoded_interpolated})
 
         return self.postprocess(stylized[0])
         
