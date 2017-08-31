@@ -19,8 +19,6 @@ class AdaINTest(object):
         config.gpu_options.allow_growth = True
         self.sess = tf.Session(config=config)
 
-        self.sess.run(tf.global_variables_initializer())
-
         with tf.device(device_t):
             saver = tf.train.Saver()
 
@@ -43,6 +41,7 @@ class AdaINTest(object):
         return np.uint8(np.clip(image, 0, 1) * 255)
 
     def predict(self, content, style, alpha=1):
+        '''Stylize a single content/style pair'''
         content = self.preprocess(content)
         style = self.preprocess(style)
 
@@ -53,7 +52,8 @@ class AdaINTest(object):
         return self.postprocess(stylized[0])
 
     def predict_interpolate(self, content, styles, style_weights, alpha=1):
-        content_stacked = np.stack([content]*len(styles))
+        '''Stylize a weighted sum of multiple style encodings for a single content'''
+        content_stacked = np.stack([content]*len(styles))  # Repeat content for each style
         style_stacked = np.stack(styles)
         content_stacked = self.preprocess(content_stacked)
         style_stacked = self.preprocess(style_stacked)
@@ -61,7 +61,8 @@ class AdaINTest(object):
         encoded = self.sess.run(self.model.adain_encoded, feed_dict={self.content_imgs: content_stacked,
                                                                      self.style_imgs:   style_stacked,
                                                                      self.alpha_tensor: alpha})
-        
+
+        # Weight & combine AdaIN transformed encodings
         style_weights = np.array(style_weights).reshape((-1, 1, 1, 1))
         encoded_weighted = encoded * style_weights
         encoded_interpolated = np.sum(encoded_weighted, axis=0, keepdims=True)
@@ -69,10 +70,3 @@ class AdaINTest(object):
         stylized = self.sess.run(self.stylized, feed_dict={self.model.adain_encoded_pl: encoded_interpolated})
 
         return self.postprocess(stylized[0])
-        
-
-
-
-### TODO:
-# Process single image
-# Process video file
