@@ -1,14 +1,13 @@
 from __future__ import division, print_function
 
+import os
 import argparse
 import cv2
 import numpy as np
 from utils import preserve_colors
 import tensorflow as tf
-from imutils.video import FPS
-from threading import Thread
-import os
 from utils import get_files, get_img, get_img_crop
+from utils import WebcamVideoStream, FPS
 from scipy.ndimage.filters import gaussian_filter
 # from coral import coral
 from test import AdaINTest
@@ -18,9 +17,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-src', '--source', dest='video_source', type=int,
                     default=0, help='Device index of the camera.')
 parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', required=True)
-parser.add_argument('--style-path', type=str,
-                    dest='style_path', help='Style images folder')
-parser.add_argument('--video', type=str, help="Stream from input video file", default=None)
+parser.add_argument('--style-path', type=str, dest='style_path', help='Style images folder')
+parser.add_argument('--video', type=str, help='Stream from input video file', default=None)
+parser.add_argument('--width', type=int, help='Webcam video width', default=None)
+parser.add_argument('--height', type=int, help='Webcam video height', default=None)
 parser.add_argument('--video-out', type=str, help="Save to output video file", default=None)
 parser.add_argument('--fps', type=int, help="Frames Per Second for output video file", default=10)
 parser.add_argument('--no-gui', action='store_true', help="Don't render the gui", default=False)
@@ -36,47 +36,6 @@ parser.add_argument('--interpolate', action='store_true', help="Interpolate betw
 parser.add_argument('--noise', action='store_true', help="Synthesize textures from noise images", default=False)
 parser.add_argument('-r', '--random', type=int, help='Load a random img after iterations', default=0)
 args = parser.parse_args()
-
-
-class WebcamVideoStream:
-    '''From http://www.pyimagesearch.com/2015/12/21/increasing-webcam-fps-with-python-and-opencv/'''
-    def __init__(self, src=0):
-        # initialize the video camera stream and read the first frame
-        # from the stream
-        self.stream = cv2.VideoCapture(src)
-        self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, 960)
-
-        (self.ret, self.frame) = self.stream.read()
-
-
- 
-        # initialize the variable used to indicate if the thread should
-        # be stopped
-        self.stopped = False
-
-    def start(self):
-        # start the thread to read frames from the video stream
-        Thread(target=self.update, args=()).start()
-        return self
- 
-    def update(self):
-        # keep looping infinitely until the thread is stopped
-        while True:
-            # if the thread indicator variable is set, stop the thread
-            if self.stopped:
-                return
- 
-            # otherwise, read the next frame from the stream
-            (self.ret, self.frame) = self.stream.read()
- 
-    def read(self):
-        # return the frame most recently read
-        return (self.ret, self.frame)
- 
-    def stop(self):
-        # indicate that the thread should be stopped
-        self.stopped = True
 
 
 class StyleWindow(object):
@@ -101,10 +60,10 @@ class StyleWindow(object):
         self.set_style(random=True, window='Style Controls', style_idx=0)
 
         if interpolate:
-            self.interp_weight = 0.5
+            self.interp_weight = 1.
             cv2.namedWindow('style2')
-            cv2.createTrackbar('interpolation','style2', 100, 100, self.set_interp)
-            self.set_style(random=True, window='style2', style_idx=1)
+            cv2.createTrackbar('interpolation','Style Controls', 100, 100, self.set_interp)
+            self.set_style(random=True, style_idx=1, window='style2')
 
     def set_style(self, idx=None, random=False, style_idx=0, window='Style Controls'):
         if idx is not None:
@@ -141,8 +100,14 @@ class StyleWindow(object):
 
 
 def main():
-    if args.video is not None:
-        cap = WebcamVideoStream(args.video).start()
+    # Load the AdaIN model
+    ada_in = AdaINTest(args.checkpoint, args.device)
+
+    # Load a panel to control style settings
+    style_window = StyleWindow(args.style_path, args.style_size, args.scale, args.alpha, args.interpolate)
+    
+    if args.video is not None:  # Load from video instead of webcam
+        cap = WebcamVideoStream(args.video, args.width, args.height).start()
     else:
         cap = WebcamVideoStream(args.video_source).start()
 
@@ -151,22 +116,18 @@ def main():
     # Grab a sample frame to calculate frame size
     frame_resize = cv2.resize(frame, None, fx=args.scale, fy=args.scale)
     img_shape = frame_resize.shape
-    
-    ada_in = AdaINTest(args.checkpoint, args.device)
-    
-    style_window = StyleWindow(args.style_path, args.style_size, args.scale, args.alpha, args.interpolate)
 
+    # Setup video out writer
     if args.video_out is not None:
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         if args.concat:
-            out_shape = (img_shape[1]+img_shape[0],img_shape[0])
-            print(out_shape)
+            out_shape = (img_shape[1]+img_shape[0],img_shape[0]) # Make room for the style img
         else:
             out_shape = (img_shape[1],img_shape[0])
         print('Video Out Shape:', out_shape)
-        out = cv2.VideoWriter(args.video_out, fourcc, args.fps, out_shape)
-
-    fps = FPS().start()
+        video_writer = cv2.VideoWriter(args.video_out, fourcc, args.fps, out_shape)
+    
+    fps = FPS().start() # Track FPS processing speed
 
     count = 0
 
@@ -176,7 +137,7 @@ def main():
         if ret is True:       
             frame_resize = cv2.resize(frame, None, fx=style_window.scale, fy=style_window.scale)
 
-            if args.noise:
+            if args.noise:  # Generate textures from noise instead of images
                 frame_resize = np.random.randint(0, 256, frame_resize.shape, np.uint8)
                 frame_resize = gaussian_filter(frame_resize, sigma=0.5)
 
@@ -210,8 +171,8 @@ def main():
             stylized_bgr = cv2.cvtColor(stylized_rgb, cv2.COLOR_RGB2BGR)
                 
             if args.video_out is not None:
-                stylized_bgr = cv2.resize(stylized_bgr, out_shape)
-                out.write(stylized_bgr)
+                stylized_bgr = cv2.resize(stylized_bgr, out_shape) # Make sure frame matches video size
+                video_writer.write(stylized_bgr)
 
             if args.no_gui is False:
                 cv2.imshow('AdaIN Style', stylized_bgr)
@@ -219,10 +180,11 @@ def main():
             fps.update()
 
             key = cv2.waitKey(10) 
-            if key & 0xFF == ord('r'):
-                style_window.set_style(random=True)
-                #TODO randomize 2nd image if interpolating
-            elif key & 0xFF == ord('q'):
+            if key & 0xFF == ord('r'):   # Load new random style
+                style_window.set_style(random=True, style_idx=0)
+                if args.interpolate:     # Load a a second style if interpolating
+                    style_window.set_style(random=True, style_idx=1, window='style2')    
+            elif key & 0xFF == ord('q'): # Quit
                 break
         else:
             break
@@ -234,7 +196,7 @@ def main():
     cap.stop()
     
     if args.video_out is not None:
-        out.release()
+        video_writer.release()
     
     cv2.destroyAllWindows()
 

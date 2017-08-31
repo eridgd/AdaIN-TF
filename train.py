@@ -122,7 +122,7 @@ def train():
                            lr_decay=args.lr_decay,
                            use_gram=args.gram)
 
-        saver = tf.train.Saver(max_to_keep=100)
+        saver = tf.train.Saver(max_to_keep=None)
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth=True
