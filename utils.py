@@ -90,9 +90,8 @@ class WebcamVideoStream:
         # from the stream
         self.stream = cv2.VideoCapture(src)
 
-        if width is not None:
+        if width is not None and height is not None: # Both are needed to change default dims
             self.stream.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        if height is not None:
             self.stream.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
         (self.ret, self.frame) = self.stream.read()
@@ -154,5 +153,3 @@ class FPS:
         def fps(self):
                 # compute the (approximate) frames per second
                 return self._numFrames / self.elapsed()
-
-

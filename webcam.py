@@ -39,6 +39,8 @@ args = parser.parse_args()
 
 
 class StyleWindow(object):
+    '''Helper class to handle style image settings'''
+
     def __init__(self, style_path, img_size=512, scale=1, alpha=1, interpolate=False):
         self.style_imgs = get_files(style_path)
 
@@ -51,17 +53,27 @@ class StyleWindow(object):
 
         cv2.namedWindow('Style Controls')
         if len(self.style_imgs) > 1:
+            # Select style image by index
             cv2.createTrackbar('index','Style Controls', 0, len(self.style_imgs)-1, self.set_idx)
+        
+        # Blend param for AdaIN transform
         cv2.createTrackbar('alpha','Style Controls', 100, 100, self.set_alpha)
+
+        # Resize style to this size before cropping
         cv2.createTrackbar('size','Style Controls', img_size, 2048, self.set_size)
+
+        # Size of square crop box for style
         cv2.createTrackbar('crop size','Style Controls', 256, 2048, self.set_crop_size)
+
+        # Scale the content before processing
         cv2.createTrackbar('scale','Style Controls', int(scale*100), 200, self.set_scale)
 
         self.set_style(random=True, window='Style Controls', style_idx=0)
 
         if interpolate:
-            self.interp_weight = 1.
+            # Create a window to show second style image for interpolation
             cv2.namedWindow('style2')
+            self.interp_weight = 1.
             cv2.createTrackbar('interpolation','Style Controls', 100, 100, self.set_interp)
             self.set_style(random=True, style_idx=1, window='style2')
 
@@ -79,11 +91,11 @@ class StyleWindow(object):
         self.set_style(idx)
 
     def set_size(self, size):
-        self.img_size = max(256, size)  # Don't go below 256
+        self.img_size = max(size, self.crop_size)      # Don't go below crop_size
         self.set_style()
 
     def set_crop_size(self, crop_size):
-        self.crop_size = min(crop_size, self.img_size)
+        self.crop_size = min(crop_size, self.img_size) # Don't go above img_size
         self.set_style()
 
     def set_scale(self, scale):

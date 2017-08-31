@@ -28,7 +28,7 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 # TODO:
 * Docs
 * Pre-trained model
+* Pre-compute style encoding
 * CORAL for preserving colors
-* Style interpolation
 * Video processing
 * Model freezing
