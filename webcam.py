@@ -105,11 +105,9 @@ def main():
 
     # Load a panel to control style settings
     style_window = StyleWindow(args.style_path, args.style_size, args.scale, args.alpha, args.interpolate)
-    
-    if args.video is not None:  # Load from video instead of webcam
-        cap = WebcamVideoStream(args.video, args.width, args.height).start()
-    else:
-        cap = WebcamVideoStream(args.video_source).start()
+
+    # Start the webcam stream
+    cap = WebcamVideoStream(args.video_source, args.width, args.height).start()
 
     _, frame = cap.read()
 
