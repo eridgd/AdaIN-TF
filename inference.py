@@ -4,22 +4,29 @@ from model import AdaINModel
 import tensorflow as tf
 
 
-class AdaINTest(object):
-    def __init__(self, checkpoint_dir, device_t='/gpu:0'):        
-        model = AdaINModel(mode='test')
+class AdaINference(object):
+    '''Styilze images with trained AdaIN model'''
 
-        self.stylized = model.decoded
-        self.content_imgs = model.content_imgs
-        self.style_imgs = model.style_imgs
-        self.alpha_tensor = model.alpha
+    def __init__(self, checkpoint_dir, sess=None, device='/gpu:0'): 
+        '''
+            Args:
+                checkpoint_dir: Path to trained model checkpoint
+                device: String for device ID to load model onto
+        '''       
+        self.model = AdaINModel(mode='test')
 
-        self.model = model
+        self.stylized = self.model.decoded
+        self.content_imgs = self.model.content_imgs
+        self.style_imgs = self.model.style_imgs
+        self.alpha_tensor = self.model.alpha
 
-        config = tf.ConfigProto(allow_soft_placement=True)
-        config.gpu_options.allow_growth = True
-        self.sess = tf.Session(config=config)
+        if sess is None:
+            config = tf.ConfigProto(allow_soft_placement=True)
+            config.gpu_options.allow_growth = True
+            sess = tf.Session(config=config)
+        self.sess = sess
 
-        with tf.device(device_t):
+        with tf.device(device):
             saver = tf.train.Saver()
 
             if os.path.isdir(checkpoint_dir):

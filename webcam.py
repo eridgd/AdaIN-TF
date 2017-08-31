@@ -10,7 +10,7 @@ from utils import get_files, get_img, get_img_crop
 from utils import WebcamVideoStream, FPS
 from scipy.ndimage.filters import gaussian_filter
 # from coral import coral
-from test import AdaINTest
+from inference import AdaINference
 
 
 parser = argparse.ArgumentParser()
@@ -23,7 +23,6 @@ parser.add_argument('--width', type=int, help='Webcam video width', default=None
 parser.add_argument('--height', type=int, help='Webcam video height', default=None)
 parser.add_argument('--video-out', type=str, help="Save to output video file", default=None)
 parser.add_argument('--fps', type=int, help="Frames Per Second for output video file", default=10)
-parser.add_argument('--no-gui', action='store_true', help="Don't render the gui", default=False)
 parser.add_argument('--scale', type=float, help="Scale the output image", default=1)
 # parser.add_argument('--keep-colors', action='store_true', help="Preserve the colors of the style image", default=False)
 parser.add_argument('--device', type=str,
@@ -34,7 +33,7 @@ parser.add_argument('--alpha', type=float, help="Alpha blend value", default=1)
 parser.add_argument('--concat', action='store_true', help="Concatenate style image and stylized output", default=False)
 parser.add_argument('--interpolate', action='store_true', help="Interpolate between two images", default=False)
 parser.add_argument('--noise', action='store_true', help="Synthesize textures from noise images", default=False)
-parser.add_argument('-r', '--random', type=int, help='Load a random img after iterations', default=0)
+parser.add_argument('-r', '--random', type=int, help='Load a random img every # iterations', default=0)
 args = parser.parse_args()
 
 
@@ -113,7 +112,7 @@ class StyleWindow(object):
 
 def main():
     # Load the AdaIN model
-    ada_in = AdaINTest(args.checkpoint, args.device)
+    ada_in = AdaINference(args.checkpoint, device=args.device)
 
     # Load a panel to control style settings
     style_window = StyleWindow(args.style_path, args.style_size, args.scale, args.alpha, args.interpolate)
@@ -184,8 +183,7 @@ def main():
                 stylized_bgr = cv2.resize(stylized_bgr, out_shape) # Make sure frame matches video size
                 video_writer.write(stylized_bgr)
 
-            if args.no_gui is False:
-                cv2.imshow('AdaIN Style', stylized_bgr)
+            cv2.imshow('AdaIN Style', stylized_bgr)
 
             fps.update()
 
