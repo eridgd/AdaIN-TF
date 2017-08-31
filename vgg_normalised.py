@@ -18,7 +18,7 @@ def vgg_from_t7(t7_file, target_layer=None):
        e.g. vgg = vgg_from_t7('vgg_normalised.t7', target_layer='relu4_1')
        Adapted from https://github.com/jonrei/tf-AdaIN/blob/master/AdaIN.py
     '''
-    t7 = torchfile.load(t7_file, force_8bytes_long=True)
+    t7 = torchfile.load(t7_file, force_8bytes_long=False)
     
     inp = Input(shape=(None, None, 3), name='vgg_input')
 
@@ -36,7 +36,7 @@ def vgg_from_t7(t7_file, target_layer=None):
             filters = module.nOutputPlane
             kernel_size = module.kH
             weight = module.weight.transpose([2,3,1,0])
-            bias = module.bias          
+            bias = module.bias
             x = Conv2D(filters, kernel_size, padding='valid', activation=None, name=name,
                         kernel_initializer=lambda shape: K.constant(weight, shape=shape),
                         bias_initializer=lambda shape: K.constant(bias, shape=shape),
@@ -55,6 +55,6 @@ def vgg_from_t7(t7_file, target_layer=None):
             break
     
     # Hook it up
-    model = Model(inp, x)
+    model = Model(inputs=inp, outputs=x)
 
     return model
