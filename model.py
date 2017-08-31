@@ -45,15 +45,20 @@ class AdaINModel(object):
         with tf.name_scope('decoder'):
             n_channels = self.adain_encoded.get_shape()[-1].value
             self.decoder_model = self.build_decoder(input_shape=(None, None, n_channels))
+
+            self.adain_encoded_pl = tf.placeholder_with_default(self.adain_encoded, shape=self.adain_encoded.get_shape())
             
             # Stylized/decoded output from AdaIN transformed encoding
-            self.decoded = self.decoder_model(Lambda(lambda x: x)(self.adain_encoded)) # Lambda converts TF tensor to Keras
+            self.decoded = self.decoder_model(Lambda(lambda x: x)(self.adain_encoded_pl)) # Lambda converts TF tensor to Keras
+
+            # self.adain_encoded_pl = K.placeholder(shape=(None, None, None, n_channels))
+            # self.decoded_from_pl = self.decoder_model(self.adain_encoded_pl)
 
         # Content layer encoding for stylized out
         self.decoded_encoded = self.content_encoder_model(self.decoded)
 
 
-    def build_decoder(self, input_shape):
+    def build_decoder(self, input_shape): 
         arch = [                                                            #  HxW  / InC->OutC
                 Conv2DReflect(256, 3, padding='valid', activation='relu'),  # 32x32 / 512->256
                 UpSampling2D(),                                             # 32x32 -> 64x64
