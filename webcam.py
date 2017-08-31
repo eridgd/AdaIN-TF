@@ -103,9 +103,8 @@ class StyleWindow(object):
         if interpolate:
             self.interp_weight = 0.5
             cv2.namedWindow('style2')
-            cv2.createTrackbar('interpolation','style2', 50, 100, self.set_interp)
+            cv2.createTrackbar('interpolation','style2', 100, 100, self.set_interp)
             self.set_style(random=True, window='style2', style_idx=1)
-                   
 
     def set_style(self, idx=None, random=False, style_idx=0, window='Style Controls'):
         if idx is not None:
@@ -175,7 +174,6 @@ def main():
         ret, frame = cap.read()
 
         if ret is True:       
-            # frame_resize = cv2.resize(frame, None, fx=args.scale, fy=args.scale)
             frame_resize = cv2.resize(frame, None, fx=style_window.scale, fy=style_window.scale)
 
             if args.noise:
@@ -198,19 +196,16 @@ def main():
                 stylized_rgb = ada_in.predict(image_rgb, style_window.style_rgbs[0], style_window.alpha)
             else:
                 interp_weights = [style_window.interp_weight, 1 - style_window.interp_weight]
-                print("INTERP_WEIGHTS",interp_weights)
                 stylized_rgb = ada_in.predict_interpolate(image_rgb, 
                                                           style_window.style_rgbs,
                                                           interp_weights,
                                                           style_window.alpha)
 
-
-
-            # TODO fix
-            # if args.concat:
-            #     # Resize style img to same height as frame
-            #     style_rgb_resized = cv2.resize(style_window.style_rgb, (stylized_rgb.shape[0], stylized_rgb.shape[0]))
-            #     stylized_rgb = np.hstack([style_rgb_resized, stylized_rgb])
+            # Stitch the style + stylized output together, but only if there's one style image
+            if args.concat and args.interpolate is False:
+                # Resize style img to same height as frame
+                style_rgb_resized = cv2.resize(style_window.style_rgbs[0], (stylized_rgb.shape[0], stylized_rgb.shape[0]))
+                stylized_rgb = np.hstack([style_rgb_resized, stylized_rgb])
             
             stylized_bgr = cv2.cvtColor(stylized_rgb, cv2.COLOR_RGB2BGR)
                 
@@ -226,6 +221,7 @@ def main():
             key = cv2.waitKey(10) 
             if key & 0xFF == ord('r'):
                 style_window.set_style(random=True)
+                #TODO randomize 2nd image if interpolating
             elif key & 0xFF == ord('q'):
                 break
         else:
