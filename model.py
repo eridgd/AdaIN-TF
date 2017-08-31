@@ -9,12 +9,13 @@ import functools
 
 
 class AdaINModel(object):
-    '''Adaptive Instance Normalization model from https://arxiv.org/abs/1703.06868
-    '''
+    '''Adaptive Instance Normalization model from https://arxiv.org/abs/1703.06868'''
+
     def __init__(self, mode='train', *args, **kwargs):
+        # Build the graph
         self.build_model()
 
-        if mode == 'train':
+        if mode == 'train':  # Train & summary ops only needed for training phase
             self.build_train(**kwargs)
             self.build_summary()
 
@@ -155,7 +156,7 @@ class AdaINModel(object):
             self.train_op = d_optimizer.minimize(self.total_loss, var_list=self.d_vars, global_step=self.global_step)
 
     def build_summary(self):
-        ### Summaries
+        ### Loss & image summaries
         with tf.name_scope('summary'):
             content_loss_summary = tf.summary.scalar('content_loss', self.content_loss)
             style_loss_summary = tf.summary.scalar('style_loss', self.style_loss)

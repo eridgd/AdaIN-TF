@@ -18,7 +18,6 @@ parser.add_argument('-src', '--source', dest='video_source', type=int,
                     default=0, help='Device index of the camera.')
 parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', required=True)
 parser.add_argument('--style-path', type=str, dest='style_path', help='Style images folder')
-parser.add_argument('--video', type=str, help='Stream from input video file', default=None)
 parser.add_argument('--width', type=int, help='Webcam video width', default=None)
 parser.add_argument('--height', type=int, help='Webcam video height', default=None)
 parser.add_argument('--video-out', type=str, help="Save to output video file", default=None)
