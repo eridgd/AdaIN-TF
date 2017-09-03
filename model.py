@@ -175,7 +175,7 @@ class AdaINModel(object):
             # adain_encoded_summary = tf.summary.image('adain_encoded', sliced(self.adain_encoded))
             # decoded_encoded_summary = tf.summary.image('decoded_encoded', sliced(self.decoded_encoded))
 
-            # for var in self.d_vars:
-            #     tf.summary.histogram(var.op.name, var)
+            for var in self.d_vars:
+                tf.summary.histogram(var.op.name, var)
 
             self.summary_op = tf.summary.merge_all()

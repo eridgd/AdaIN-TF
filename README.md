@@ -5,6 +5,7 @@ This is a TensorFlow/Keras implementation of [Arbitrary Style Transfer in Real-t
 ## Dependencies
 
 * tensorflow
+* keras
 * torchfile 
 
 Optionally:
@@ -28,7 +29,8 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 # TODO:
 * Docs
 * Pre-trained model
-* Pre-compute style encoding
+* Pre-compute style encoding means/stds
 * CORAL for preserving colors
 * Video processing
 * Model freezing
+* Webcam style window threading

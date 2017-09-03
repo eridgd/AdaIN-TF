@@ -7,26 +7,27 @@ import tensorflow as tf
 class AdaINference(object):
     '''Styilze images with trained AdaIN model'''
 
-    def __init__(self, checkpoint_dir, sess=None, device='/gpu:0'): 
+    def __init__(self, checkpoint_dir, device='/gpu:0'): 
         '''
             Args:
                 checkpoint_dir: Path to trained model checkpoint
                 device: String for device ID to load model onto
         '''       
-        self.model = AdaINModel(mode='test')
+        graph = tf.get_default_graph()
 
-        self.stylized = self.model.decoded
-        self.content_imgs = self.model.content_imgs
-        self.style_imgs = self.model.style_imgs
-        self.alpha_tensor = self.model.alpha
+        with graph.device(device):
+            self.model = AdaINModel(mode='test')
 
-        if sess is None:
+            self.stylized = self.model.decoded
+            self.content_imgs = self.model.content_imgs
+            self.style_imgs = self.model.style_imgs
+            self.alpha_tensor = self.model.alpha
+
             config = tf.ConfigProto(allow_soft_placement=True)
             config.gpu_options.allow_growth = True
             sess = tf.Session(config=config)
-        self.sess = sess
+            self.sess = sess
 
-        with tf.device(device):
             saver = tf.train.Saver()
 
             if os.path.isdir(checkpoint_dir):
