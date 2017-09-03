@@ -3,6 +3,9 @@ import random
 import cv2
 from threading import Thread
 import datetime
+from coral import coral
+from color_transfer import color_transfer
+
 
 ### Image helpers
 
@@ -67,18 +70,28 @@ def get_img_random_crop(src, resize=512, crop=256):
 
     return img
 
-def preserve_colors(content_rgb, styled_rgb):
-    """Extract luminance from styled image and apply colors from content"""
-    if content_rgb.shape != styled_rgb.shape:
-      new_shape = (content_rgb.shape[1], content_rgb.shape[0])
-      styled_rgb = cv2.resize(styled_rgb, new_shape)
-    styled_yuv = cv2.cvtColor(styled_rgb, cv2.COLOR_RGB2YUV)
-    Y_s, U_s, V_s = cv2.split(styled_yuv)
-    image_YUV = cv2.cvtColor(content_rgb, cv2.COLOR_RGB2YUV)
-    Y_i, U_i, V_i = cv2.split(image_YUV)
-    styled_rgb = cv2.cvtColor(np.stack([Y_s, U_i, V_i], axis=-1), cv2.COLOR_YUV2RGB)
-    return styled_rgb
+# def preserve_colors(content_rgb, styled_rgb):
+#     """Extract luminance from styled image and apply colors from content"""
+#     if content_rgb.shape != styled_rgb.shape:
+#       new_shape = (content_rgb.shape[1], content_rgb.shape[0])
+#       styled_rgb = cv2.resize(styled_rgb, new_shape)
+#     styled_yuv = cv2.cvtColor(styled_rgb, cv2.COLOR_RGB2YUV)
+#     Y_s, U_s, V_s = cv2.split(styled_yuv)
+#     image_YUV = cv2.cvtColor(content_rgb, cv2.COLOR_RGB2YUV)
+#     Y_i, U_i, V_i = cv2.split(image_YUV)
+#     styled_rgb = cv2.cvtColor(np.stack([Y_s, U_i, V_i], axis=-1), cv2.COLOR_YUV2RGB)
+#     return styled_rgb
 
+def preserve_colors(style_rgb, content_rgb):
+    coraled = coral(style_rgb/255., content_rgb/255.)
+    coraled = np.uint8(np.clip(coraled, 0, 1) * 255.)
+    return coraled
+
+# def preserve_colors(style_rgb, content_rgb):
+#     style_bgr = cv2.cvtColor(style_rgb, cv2.COLOR_RGB2BGR)
+#     content_bgr = cv2.cvtColor(content_rgb, cv2.COLOR_RGB2BGR)
+#     transferred = color_transfer(content_bgr, style_bgr)
+#     return cv2.cvtColor(transferred, cv2.COLOR_BGR2RGB)
 
 ### Video/Webcam helpers
 ### Borrowed from https://github.com/jrosebr1/imutils/

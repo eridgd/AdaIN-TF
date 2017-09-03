@@ -49,7 +49,9 @@ class AdaINference(object):
         return np.uint8(np.clip(image, 0, 1) * 255)
 
     def predict(self, content, style, alpha=1):
-        '''Stylize a single content/style pair'''
+        '''Stylize a single content/style pair
+           Assumes that images are RGB [0,255]
+        '''
         content = self.preprocess(content)
         style = self.preprocess(style)
 
