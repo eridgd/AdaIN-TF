@@ -1,7 +1,7 @@
 # AdaIN-TF
 
 <p align='center'>
-	<img src='https://i.imgur.com/GkDcH5W.gif' width="600px">
+	<img src='examples/gilbert.gif'>
 </p>
 
 This is a TensorFlow/Keras implementation of [Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization](https://arxiv.org/abs/1703.06868).
