@@ -9,7 +9,6 @@ import tensorflow as tf
 from utils import get_files, get_img, get_img_crop
 from utils import WebcamVideoStream, FPS
 from scipy.ndimage.filters import gaussian_filter
-# from coral import coral
 from inference import AdaINference
 
 
@@ -23,7 +22,7 @@ parser.add_argument('--height', type=int, help='Webcam video height', default=No
 parser.add_argument('--video-out', type=str, help="Save to output video file", default=None)
 parser.add_argument('--fps', type=int, help="Frames Per Second for output video file", default=10)
 parser.add_argument('--scale', type=float, help="Scale the output image", default=1)
-# parser.add_argument('--keep-colors', action='store_true', help="Preserve the colors of the style image", default=False)
+parser.add_argument('--keep-colors', action='store_true', help="Preserve the colors of the style image", default=False)
 parser.add_argument('--device', type=str,
                         dest='device', help='Device to perform compute on',
                         default='/gpu:0')
@@ -137,6 +136,8 @@ def main():
     
     fps = FPS().start() # Track FPS processing speed
 
+    keep_colors = args.keep_colors
+
     count = 0
 
     while(True):
@@ -157,8 +158,8 @@ def main():
             if args.random > 0 and count % args.random == 0:
                 style_window.set_style(random=True, style_idx=0)
 
-            # if args.keep_colors:
-            #     style_window.style_rgb = coral(style_window.style_rgb, image_rgb)
+            if keep_colors:
+                style_window.style_rgb = preserve_colors(style_window.style_rgb, content_img)
 
             if args.interpolate is False:
                 # Run the frame through the style network
@@ -191,6 +192,9 @@ def main():
                 style_window.set_style(random=True, style_idx=0)
                 if args.interpolate:     # Load a a second style if interpolating
                     style_window.set_style(random=True, style_idx=1, window='style2')    
+            elif key & 0xFF == ord('c'):
+                keep_colors = not keep_colors
+                print("Switching to keep_colors",keep_colors)
             elif key & 0xFF == ord('q'): # Quit
                 break
         else:
