@@ -2,10 +2,11 @@
 
 This is a TensorFlow/Keras implementation of [Arbitrary Style Transfer in Real-time with Adaptive Instance Normalization](https://arxiv.org/abs/1703.06868).
 
-## Dependencies
+## Requirements
 
-* tensorflow
-* keras
+* Python 3.x (2.7 may work but is untested)
+* tensorflow 1.2.1+
+* keras 2.0.x
 * torchfile 
 
 Optionally:
@@ -34,3 +35,4 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 * Video processing
 * Model freezing
 * Webcam style window threading
+* Keras VGG

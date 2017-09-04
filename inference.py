@@ -61,6 +61,20 @@ class AdaINference(object):
 
         return self.postprocess(stylized[0])
 
+    def predict_batch(self, content_batch, style, alpha=1):
+        '''Stylize a batch of content imgs with a single style
+           Assumes that images are RGB [0,255]
+        '''
+        content_batch = self.preprocess(content_batch)
+        style_batch = np.stack([style]*len(content_batch)) 
+        style_batch = self.preprocess(style_batch)
+
+        stylized = self.sess.run(self.stylized, feed_dict={self.content_imgs: content_batch,
+                                                           self.style_imgs:   style_batch,
+                                                           self.alpha_tensor: alpha})
+
+        return self.postprocess(stylized)
+
     def predict_interpolate(self, content, styles, style_weights, alpha=1):
         '''Stylize a weighted sum of multiple style encodings for a single content'''
         content_stacked = np.stack([content]*len(styles))  # Repeat content for each style

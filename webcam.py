@@ -4,8 +4,8 @@ import os
 import argparse
 import cv2
 import numpy as np
-from utils import preserve_colors
 import tensorflow as tf
+from utils import preserve_colors
 from utils import get_files, get_img, get_img_crop
 from utils import WebcamVideoStream, FPS
 from scipy.ndimage.filters import gaussian_filter
@@ -16,10 +16,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-src', '--source', dest='video_source', type=int,
                     default=0, help='Device index of the camera.')
 parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', required=True)
-parser.add_argument('--style-path', type=str, dest='style_path', help='Style images folder')
+parser.add_argument('--style-path', type=str, dest='style_path', help='Style images folder', required=True)
 parser.add_argument('--width', type=int, help='Webcam video width', default=None)
 parser.add_argument('--height', type=int, help='Webcam video height', default=None)
-parser.add_argument('--video-out', type=str, help="Save to output video file", default=None)
+parser.add_argument('--video-out', type=str, help="Save to output video file if not None", default=None)
 parser.add_argument('--fps', type=int, help="Frames Per Second for output video file", default=10)
 parser.add_argument('--scale', type=float, help="Scale the output image", default=1)
 parser.add_argument('--keep-colors', action='store_true', help="Preserve the colors of the style image", default=False)
