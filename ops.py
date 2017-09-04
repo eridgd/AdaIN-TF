@@ -1,3 +1,5 @@
+from __future__ import division, print_function
+
 import tensorflow as tf
 from keras.layers import Conv2D, Lambda
 

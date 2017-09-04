@@ -1,3 +1,5 @@
+from __future__ import division, print_function
+
 import tensorflow as tf
 from vgg_normalised import vgg_from_t7
 from keras import backend as K

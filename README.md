@@ -39,6 +39,5 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 - [ ] Pre-trained model
 - [ ] Pre-compute style encoding means/stds
 - [ ] Video processing
-- [ ] Model freezing
 - [ ] Webcam style window threading
 - [ ] Keras VGG

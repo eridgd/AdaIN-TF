@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 import scipy.misc, numpy as np, os, sys
 import random
 import cv2
