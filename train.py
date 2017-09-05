@@ -176,6 +176,10 @@ def train():
                 ### Debug
                 print("Step: {}  LR: {:.7f}  Content: {:.5f}  Style: {:.5f}  TV: {:.5f}  Time: {:.5f}".format(results['global_step'], results['lr'], results['content_loss'], results['style_loss'], results['tv_loss'], time.time() - start))
 
+            # Last save
+            save_path = saver.save(sess, os.path.join(args.checkpoint, 'model.ckpt'), results['global_step'])
+            print("Model saved in file: %s" % save_path)
+
 
 if __name__ == '__main__':
     train()
