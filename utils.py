@@ -86,25 +86,20 @@ def get_img_random_crop(src, resize=512, crop=256):
 #     return styled_rgb
 
 def preserve_colors_np(style_rgb, content_rgb):
-    s = time.time()
     coraled = coral_numpy(style_rgb/255., content_rgb/255.)
-    print(time.time() - s)
     coraled = np.uint8(np.clip(coraled, 0, 1) * 255.)
     return coraled
 
-def preserve_colors_pytorch(style_rgb, content_rgb):
-    s = time.time()
-    coraled = coral_pytorch(style_rgb/255., content_rgb/255.)
-    print(time.time() - s)
-    coraled = np.uint8(np.clip(coraled, 0, 1) * 255.)
-    # save_img('cor1.png', coraled)
-    return coraled
+# def preserve_colors_pytorch(style_rgb, content_rgb):
+#     coraled = coral_pytorch(style_rgb/255., content_rgb/255.)
+#     coraled = np.uint8(np.clip(coraled, 0, 1) * 255.)
+#     return coraled
 
-def preserve_colors_color_transfer(style_rgb, content_rgb):
-    style_bgr = cv2.cvtColor(style_rgb, cv2.COLOR_RGB2BGR)
-    content_bgr = cv2.cvtColor(content_rgb, cv2.COLOR_RGB2BGR)
-    transferred = color_transfer(content_bgr, style_bgr)
-    return cv2.cvtColor(transferred, cv2.COLOR_BGR2RGB)
+# def preserve_colors_color_transfer(style_rgb, content_rgb):
+#     style_bgr = cv2.cvtColor(style_rgb, cv2.COLOR_RGB2BGR)
+#     content_bgr = cv2.cvtColor(content_rgb, cv2.COLOR_RGB2BGR)
+#     transferred = color_transfer(content_bgr, style_bgr)
+#     return cv2.cvtColor(transferred, cv2.COLOR_BGR2RGB)
 
 ### Video/Webcam helpers
 ### Borrowed from https://github.com/jrosebr1/imutils/
