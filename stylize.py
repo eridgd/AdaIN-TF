@@ -5,7 +5,7 @@ import argparse
 import cv2
 import numpy as np
 import tensorflow as tf
-from utils import preserve_colors
+from utils import preserve_colors_np
 from utils import get_files, get_img, get_img_crop, save_img, resize_to
 import scipy
 from scipy.ndimage.filters import gaussian_filter
@@ -70,9 +70,10 @@ def main():
             style_prefix = os.path.basename(style_prefix)  # Extract filename prefix without ext
 
             style_img = get_img_crop(style_fullpath, resize=args.style_size, crop=args.crop_size)
+            # style_img = get_img(style_fullpath)
 
             if args.keep_colors:
-                style_img = preserve_colors(style_img, content_img)
+                style_img = preserve_colors_np(style_img, content_img)
 
             # if args.noise:  # Generate textures from noise instead of images
             #     frame_resize = np.random.randint(0, 256, frame_resize.shape, np.uint8)

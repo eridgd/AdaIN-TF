@@ -37,6 +37,7 @@ Many thanks to the author Xun Huang for the excellent [original Torch implementa
 - [x] CORAL for preserving colors
 - [x] Image stylization
 - [ ] Docs
+- [ ] Fix interpolation for webcam
 - [ ] Pre-trained model
 - [ ] Pre-compute style encoding means/stds
 - [ ] Video processing

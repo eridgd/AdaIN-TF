@@ -5,7 +5,7 @@ import argparse
 import cv2
 import numpy as np
 import tensorflow as tf
-from utils import preserve_colors
+from utils import preserve_colors_np
 from utils import get_files, get_img, get_img_crop
 from utils import WebcamVideoStream, FPS
 from scipy.ndimage.filters import gaussian_filter
@@ -41,6 +41,7 @@ class StyleWindow(object):
     def __init__(self, style_path, img_size=512, scale=1, alpha=1, interpolate=False):
         self.style_imgs = get_files(style_path)
 
+        # Create room for two styles for interpolation
         self.style_rgbs = [None, None]
 
         self.img_size = img_size
@@ -153,20 +154,22 @@ def main():
             count += 1
             print("Frame:",count,"Orig shape:",frame.shape,"New shape",frame_resize.shape)
 
-            image_rgb = cv2.cvtColor(frame_resize, cv2.COLOR_BGR2RGB)  # OpenCV uses BGR, we need RGB
+            content_rgb = cv2.cvtColor(frame_resize, cv2.COLOR_BGR2RGB)  # OpenCV uses BGR, we need RGB
 
             if args.random > 0 and count % args.random == 0:
                 style_window.set_style(random=True, style_idx=0)
 
             if keep_colors:
-                style_window.style_rgb = preserve_colors(style_window.style_rgb, content_img)
+                style_rgb = preserve_colors_np(style_window.style_rgbs[0], content_rgb)
+            else:
+                style_rgb = style_window.style_rgbs[0]
 
             if args.interpolate is False:
                 # Run the frame through the style network
-                stylized_rgb = ada_in.predict(image_rgb, style_window.style_rgbs[0], style_window.alpha)
+                stylized_rgb = ada_in.predict(content_rgb, style_rgb, style_window.alpha)
             else:
                 interp_weights = [style_window.interp_weight, 1 - style_window.interp_weight]
-                stylized_rgb = ada_in.predict_interpolate(image_rgb, 
+                stylized_rgb = ada_in.predict_interpolate(content_rgb, 
                                                           style_window.style_rgbs,
                                                           interp_weights,
                                                           style_window.alpha)
@@ -174,7 +177,7 @@ def main():
             # Stitch the style + stylized output together, but only if there's one style image
             if args.concat and args.interpolate is False:
                 # Resize style img to same height as frame
-                style_rgb_resized = cv2.resize(style_window.style_rgbs[0], (stylized_rgb.shape[0], stylized_rgb.shape[0]))
+                style_rgb_resized = cv2.resize(style_rgb, (stylized_rgb.shape[0], stylized_rgb.shape[0]))
                 stylized_rgb = np.hstack([style_rgb_resized, stylized_rgb])
             
             stylized_bgr = cv2.cvtColor(stylized_rgb, cv2.COLOR_RGB2BGR)
