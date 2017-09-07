@@ -11,12 +11,13 @@ def matSqrt_numpy(x):
 
 def coral_numpy(source, target):
     n_channels = source.shape[-1]
+    import IPython; IPython.embed()
 
-    source = np.moveaxis(source, -1, 0)
-    target = np.moveaxis(target, -1, 0)
+    source = np.moveaxis(source, -1, 0)  # HxWxC -> CxHxW
+    target = np.moveaxis(target, -1, 0)  # HxWxC -> CxHxW
 
-    source_flatten = source.reshape(-1, source.shape[1]*source.shape[2])
-    target_flatten = target.reshape(-1, target.shape[1]*target.shape[2])
+    source_flatten = source.reshape(n_channels, source.shape[1]*source.shape[2])
+    target_flatten = target.reshape(n_channels, target.shape[1]*target.shape[2])
 
     source_flatten_mean = source_flatten.mean(axis=1, keepdims=True)
     source_flatten_std = source_flatten.std(axis=1, keepdims=True)
@@ -33,7 +34,7 @@ def coral_numpy(source, target):
     source_flatten_transfer = source_flatten_norm_transfer * target_flatten_std + target_flatten_mean
 
     coraled = source_flatten_transfer.reshape(source.shape)
-    coraled = np.moveaxis(coraled, 0, -1)
+    coraled = np.moveaxis(coraled, 0, -1)  # CxHxW -> HxWxC
 
     return coraled
 
@@ -44,14 +45,16 @@ def matSqrt_pytorch(x):
     return result
 
 def coral_pytorch(source, target):
+    n_channels = source.shape[-1]
+
     source_t = torch.from_numpy(source).cuda()
     target_t = torch.from_numpy(target).cuda()
     
     source_chw = source_t.permute(2,0,1).contiguous()
     target_chw = target_t.permute(2,0,1).contiguous()
 
-    source_flatten = source_chw.view(3, -1)
-    target_flatten = target_chw.view(3, -1)
+    source_flatten = source_chw.view(n_channels, -1)
+    target_flatten = target_chw.view(n_channels, -1)
 
     source_flatten_mean = source_flatten.mean(1).unsqueeze(-1) # 3x1
     source_flatten_std = source_flatten.std(1).unsqueeze(-1)   # 3x1

@@ -9,13 +9,14 @@ This is a TensorFlow/Keras implementation of [Arbitrary Style Transfer in Real-t
 
 ## Requirements
 
-* Python 3.x (2.7 may work but is untested)
+* Python 3.x
 * tensorflow 1.2.1+
 * keras 2.0.x
 * torchfile 
 
 Optionally:
-* OpenCV with contrib modules (for webcam.py)
+
+* OpenCV with contrib modules (for `webcam.py`)
   * MacOS install http://www.pyimagesearch.com/2016/12/05/macos-install-opencv-3-and-python-3-5/
   * Linux install http://www.pyimagesearch.com/2016/10/24/ubuntu-16-04-how-to-install-opencv/
 * ffmpeg (for video stylization)
