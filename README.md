@@ -27,6 +27,7 @@ Optionally:
 
 1. Download [MSCOCO images](http://mscoco.org/dataset/#download) and [Wikiart images](https://www.kaggle.com/c/painter-by-numbers).
 
+# VGG
 
 ## Acknowledgments
 

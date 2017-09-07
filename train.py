@@ -5,6 +5,7 @@ import functools
 import time
 import tensorflow as tf, numpy as np, os, random
 from utils import get_files, get_img_random_crop
+import keras.backend as K
 from model import AdaINModel
 import threading
 
@@ -140,8 +141,15 @@ def train():
             sess.run(tf.global_variables_initializer())
  
             if os.path.exists(os.path.join(args.checkpoint,'checkpoint')):
-                print("Restoring checkpoint")
-                saver.restore(sess, tf.train.latest_checkpoint(args.checkpoint))
+                ckpt = tf.train.get_checkpoint_state(args.checkpoint)
+                if ckpt and ckpt.model_checkpoint_path:
+                    print("Restoring from checkpoint", ckpt.model_checkpoint_path)
+                    saver.restore(sess, ckpt.model_checkpoint_path)
+                else:
+                    raise Exception("No checkpoint found...")
+                
+
+            model.vgg19.load_weights()
 
             for iteration in range(args.max_iter):
                 start = time.time()
@@ -179,6 +187,8 @@ def train():
             # Last save
             save_path = saver.save(sess, os.path.join(args.checkpoint, 'model.ckpt'), results['global_step'])
             print("Model saved in file: %s" % save_path)
+
+            coord.request_stop()
 
 
 if __name__ == '__main__':

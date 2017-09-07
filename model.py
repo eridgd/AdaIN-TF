@@ -1,9 +1,11 @@
 from __future__ import division, print_function
 
 import tensorflow as tf
-from vgg_normalised import vgg_from_t7
+# from vgg_normalised import vgg_from_t7
+from vgg import VGG19
 from keras import backend as K
 from keras.models import Model
+# from keras.applications import VGG19
 from keras.layers import Input, Conv2D, Lambda, UpSampling2D
 from keras.initializers import VarianceScaling
 from ops import adain, pad_reflect, Conv2DReflect, torch_decay, gram_matrix, mse, sse
@@ -28,13 +30,16 @@ class AdaINModel(object):
 
         ### Load shared VGG model up to relu4_1
         with tf.name_scope('encoder'):
-            self.vgg_model = vgg_from_t7('vgg_normalised.t7', target_layer='relu4_1')
+            # self.vgg_model = vgg_from_t7('vgg_normalised.t7', target_layer='relu4_1')
+            self.vgg19 = VGG19()
+            self.vgg_model = self.vgg19.model
         print(self.vgg_model.summary())
 
         ### Build encoders for content layer
         with tf.name_scope('content_layer_encoder'):
             # Build content layer encoding model
-            content_layer = self.vgg_model.get_layer('relu4_1').output
+            # content_layer = self.vgg_model.get_layer('relu4_1').output
+            content_layer = self.vgg_model.get_layer('block4_conv1').output
             self.content_encoder_model = Model(inputs=self.vgg_model.input, outputs=content_layer)
 
             # Setup content layer encodings for content/style images
@@ -96,10 +101,14 @@ class AdaINModel(object):
         ### Extract style layer feature maps for input style & decoded stylized output
         with tf.name_scope('style_layers'):
             # Build style model for blockX_conv1 tensors for X:[1,2,3,4]
-            relu_layers = [ 'relu1_1',
-                            'relu2_1',
-                            'relu3_1',
-                            'relu4_1' ]
+            # relu_layers = [ 'relu1_1',
+            #                 'relu2_1',
+            #                 'relu3_1',
+            #                 'relu4_1' ]
+            relu_layers = [ 'block1_conv1',
+                            'block2_conv1',
+                            'block3_conv1',
+                            'block4_conv1' ]
 
             style_layers = [self.vgg_model.get_layer(l).output for l in relu_layers]
             self.style_layer_model = Model(inputs=self.vgg_model.input, outputs=style_layers)

@@ -5,8 +5,8 @@ import random
 import cv2
 from threading import Thread
 import datetime
-from coral import coral_pytorch, coral_numpy
-from color_transfer import color_transfer
+from coral import coral_numpy # , coral_pytorch
+# from color_transfer import color_transfer
 import time
 
 

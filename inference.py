@@ -40,6 +40,8 @@ class AdaINference(object):
                 else:
                     raise Exception("No checkpoint found...")
 
+            self.model.vgg19.load_weights()
+
     @staticmethod
     def preprocess(image):
         if len(image.shape) == 3:  # Add batch dimension
