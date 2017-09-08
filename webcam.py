@@ -17,6 +17,9 @@ parser.add_argument('-src', '--source', dest='video_source', type=int,
                     default=0, help='Device index of the camera.')
 parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', required=True)
 parser.add_argument('--style-path', type=str, dest='style_path', help='Style images folder', required=True)
+parser.add_argument('--vgg-path', type=str,
+                    dest='vgg_path', help='Path to vgg_normalised.t7', 
+                    default='models/vgg_normalised.t7')
 parser.add_argument('--width', type=int, help='Webcam video width', default=None)
 parser.add_argument('--height', type=int, help='Webcam video height', default=None)
 parser.add_argument('--video-out', type=str, help="Save to output video file if not None", default=None)
@@ -111,7 +114,7 @@ class StyleWindow(object):
 
 def main():
     # Load the AdaIN model
-    ada_in = AdaINference(args.checkpoint, device=args.device)
+    ada_in = AdaINference(args.checkpoint, args.vgg_path, device=args.device)
 
     # Load a panel to control style settings
     style_window = StyleWindow(args.style_path, args.style_size, args.scale, args.alpha, args.interpolate)

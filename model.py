@@ -13,22 +13,22 @@ import functools
 class AdaINModel(object):
     '''Adaptive Instance Normalization model from https://arxiv.org/abs/1703.06868'''
 
-    def __init__(self, mode='train', *args, **kwargs):
+    def __init__(self, mode='train', vgg_weights=None, *args, **kwargs):
         # Build the graph
-        self.build_model()
+        self.build_model(vgg_weights)
 
         if mode == 'train':  # Train & summary ops only needed for training phase
             self.build_train(**kwargs)
             self.build_summary()
 
-    def build_model(self):
+    def build_model(self, vgg_weights):
         self.content_imgs = tf.placeholder(shape=(None, None, None, 3), name='content_imgs', dtype=tf.float32)
         self.style_imgs = tf.placeholder(shape=(None, None, None, 3), name='style_imgs', dtype=tf.float32)
         self.alpha = tf.placeholder_with_default(1., shape=[], name='alpha')
 
         ### Load shared VGG model up to relu4_1
         with tf.name_scope('encoder'):
-            self.vgg_model = vgg_from_t7('vgg_normalised.t7', target_layer='relu4_1')
+            self.vgg_model = vgg_from_t7(vgg_weights, target_layer='relu4_1')
         print(self.vgg_model.summary())
 
         ### Build encoders for content layer

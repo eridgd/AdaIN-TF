@@ -19,6 +19,9 @@ parser.add_argument('-src', '--source', dest='video_source', type=int,
 parser.add_argument('--checkpoint', type=str, help='Checkpoint directory', required=True)
 parser.add_argument('--content-path', type=str, dest='content_path', help='Content image or folder of images')
 parser.add_argument('--style-path', type=str, dest='style_path', help='Style image or folder of images')
+parser.add_argument('--vgg-path', type=str,
+                    dest='vgg_path', help='Path to vgg_normalised.t7', 
+                    default='models/vgg_normalised.t7')
 parser.add_argument('--out-path', type=str, dest='out_path', help='Output folder path')
 parser.add_argument('--keep-colors', action='store_true', help="Preserve the colors of the style image", default=False)
 parser.add_argument('--device', type=str,
@@ -38,7 +41,7 @@ def main():
     start = time.time()
 
     # Load the AdaIN model
-    ada_in = AdaINference(args.checkpoint, device=args.device)
+    ada_in = AdaINference(args.checkpoint, args.vgg_path, device=args.device)
 
     # Get content & style full paths
     if os.path.isdir(args.content_path):

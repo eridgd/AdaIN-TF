@@ -9,7 +9,7 @@ import tensorflow as tf
 class AdaINference(object):
     '''Styilze images with trained AdaIN model'''
 
-    def __init__(self, checkpoint_dir, device='/gpu:0'): 
+    def __init__(self, checkpoint_dir, vgg_weights, device='/gpu:0'): 
         '''
             Args:
                 checkpoint_dir: Path to trained model checkpoint
@@ -18,7 +18,7 @@ class AdaINference(object):
         graph = tf.get_default_graph()
 
         with graph.device(device):
-            self.model = AdaINModel(mode='test')
+            self.model = AdaINModel(mode='test', vgg_weights=vgg_weights)
 
             self.stylized = self.model.decoded
             self.content_imgs = self.model.content_imgs

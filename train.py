@@ -20,6 +20,9 @@ parser.add_argument('--content-path', type=str,
                     dest='content_path', help='Content images folder')
 parser.add_argument('--style-path', type=str,
                     dest='style_path', help='Style images folder')
+parser.add_argument('--vgg-path', type=str,
+                    dest='vgg_path', help='Path to vgg_normalised.t7', 
+                    default='models/vgg_normalised.t7')
 
 ### Loss weights
 parser.add_argument('--content-weight', type=float,
@@ -115,6 +118,7 @@ def train():
 
         ### Build the model graph and train/summary ops
         model = AdaINModel(mode='train',
+                           vgg_weights=args.vgg_path,
                            batch_size=args.batch_size,
                            content_weight=args.content_weight, 
                            style_weight=args.style_weight,
